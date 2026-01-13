@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Architecture Guide 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #e0e0e0;
+            overflow-x: hidden;
+            padding: 1%;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            padding: 8px 1%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            margin-bottom: 1%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1%;
+            margin-bottom: 1%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 70px;
+            padding: 10px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.72rem;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .category {
+            margin-bottom: 1%;
+        }
+
+        .category-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 1%;
+            padding: 6px 1%;
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .pattern-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 1%;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .pattern-card:active {
+            transform: scale(0.98);
+        }
+
+        .pattern-header {
+            padding: 10px 1%;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .pattern-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .pattern-icon {
+            font-size: 0.7rem;
+            color: #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .pattern-card.expanded .pattern-icon {
+            transform: rotate(180deg);
+        }
+
+        .pattern-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0 1%;
+        }
+
+        .pattern-card.expanded .pattern-content {
+            max-height: 1000px;
+            padding: 10px 1%;
+        }
+
+        .pattern-desc {
+            font-size: 0.75rem;
+            color: #b0b0b0;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .pattern-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .tag {
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            color: #a8b5ff;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .tag.beginner {
+            background: rgba(76, 175, 80, 0.2);
+            color: #a5d6a7;
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .use-case {
+            font-size: 0.7rem;
+            color: #8ab4f8;
+            margin-top: 8px;
+            padding: 6px 1%;
+            background: rgba(138, 180, 248, 0.1);
+            border-radius: 4px;
+            border-left: 2px solid #8ab4f8;
+        }
+
+        .use-case strong {
+            color: #a8c7ff;
+        }
+
+        .learning-path {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 2px solid #ffc107;
+            color: #ffd54f;
+            padding: 6px 1%;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-top: 8px;
+        }
+
+        .learning-path strong {
+            color: #ffe082;
+        }
+
+        .tip-box {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 2px solid #4caf50;
+            color: #a5d6a7;
+            padding: 8px 1%;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .tip-box strong {
+            color: #c5e1a5;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1rem;
+            }
+            
+            .tab {
+                font-size: 0.68rem;
+                padding: 8px 6px;
+                min-width: 65px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏗️ Architecture Guide 2026</h1>
+        <p>From Basics to Advanced Patterns</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="basics">Basics</div>
+        <div class="tab" data-tab="software">Software</div>
+        <div class="tab" data-tab="cloud">Cloud</div>
+        <div class="tab" data-tab="data">Data</div>
+        <div class="tab" data-tab="security">Security</div>
+        <div class="tab" data-tab="iot">IoT</div>
+    </div>
+
+    <div id="basics" class="content active">
+        <div class="category">
+            <div class="category-title">📚 What is Architecture?</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Software Architecture Basics</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Software architecture is the high-level structure of a system - how components are organized, how they communicate, and the fundamental decisions that shape the application. Think of it like the blueprint for a building.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Foundation</span>
+                        <span class="tag beginner">Structure</span>
+                        <span class="tag beginner">Design</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Key Insight:</strong> Architecture decisions are hard to change later. Good architecture makes your system easier to build, maintain, and scale.</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Why Architecture Matters</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Good architecture ensures your system is maintainable, scalable, secure, and performs well. It reduces technical debt, makes teams more productive, and prevents costly rewrites down the road.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Quality</span>
+                        <span class="tag beginner">Maintainability</span>
+                        <span class="tag beginner">Cost</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Remember:</strong> Bad architecture compounds over time. Small issues become major problems as your system grows.</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Core Architecture Principles</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc"><strong>Separation of Concerns:</strong> Different parts do different jobs. <strong>Loose Coupling:</strong> Components don't depend heavily on each other. <strong>High Cohesion:</strong> Related functionality stays together. <strong>Abstraction:</strong> Hide complexity behind simple interfaces.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Principles</span>
+                        <span class="tag beginner">Best-practices</span>
+                        <span class="tag beginner">Foundation</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Start Here:</strong> These four principles apply to every architecture decision you'll ever make.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">🔤 Essential Terms</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Client & Server</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc"><strong>Client:</strong> The application users interact with (web browser, mobile app). <strong>Server:</strong> The computer that stores data and processes requests. The client asks, the server responds.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Fundamentals</span>
+                        <span class="tag beginner">Network</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Example:</strong> When you open Instagram (client), it requests your feed from Instagram's servers.</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">API (Application Programming Interface)</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">A contract that defines how software components talk to each other. APIs expose specific functions/data while hiding internal complexity. Like a restaurant menu - you order items without knowing how the kitchen works.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Communication</span>
+                        <span class="tag beginner">Interface</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Common Types:</strong> REST (simple, web-friendly), GraphQL (flexible queries), gRPC (fast, binary)</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Database & Storage</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Where your application stores data permanently. <strong>Relational databases</strong> (SQL) organize data in tables with relationships. <strong>NoSQL databases</strong> offer flexibility for unstructured data. <strong>Cache</strong> stores frequently-accessed data in memory for speed.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Data</span>
+                        <span class="tag beginner">Persistence</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Rule of Thumb:</strong> Use SQL for structured data with relationships. Use NoSQL for flexible/hierarchical data.</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Frontend vs Backend</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc"><strong>Frontend:</strong> What users see and interact with (UI/UX, runs in browser). <strong>Backend:</strong> Server-side logic, database operations, business rules. <strong>Full-stack:</strong> Both frontend and backend.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Layers</span>
+                        <span class="tag beginner">Separation</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Example:</strong> Facebook's UI is frontend. The code that finds your friends and posts is backend.</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Scalability & Performance</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc"><strong>Scalability:</strong> Ability to handle more users/data. <strong>Vertical scaling:</strong> Bigger servers. <strong>Horizontal scaling:</strong> More servers. <strong>Performance:</strong> How fast your system responds. Measured in response time, throughput.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Growth</span>
+                        <span class="tag beginner">Speed</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Golden Rule:</strong> Horizontal scaling is usually better long-term. Easier to add servers than upgrade them.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">🎯 Getting Started</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Start Simple, Then Evolve</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Don't over-engineer from day one. Start with a simple monolith (single codebase). Add complexity only when you have real problems to solve. Premature optimization wastes time.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Strategy</span>
+                        <span class="tag beginner">Pragmatic</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 YAGNI Principle:</strong> "You Ain't Gonna Need It" - Don't build features you might need. Build what you need now.</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Understand Requirements First</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Before designing, ask: How many users? How much data? What must be fast? What can be slow? What's the budget? Different answers lead to different architectures.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Planning</span>
+                        <span class="tag beginner">Requirements</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Key Questions:</strong> Expected users? Read vs write ratio? Consistency vs availability? Cost constraints?</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Learn from Existing Systems</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Study how successful companies architect their systems. Read engineering blogs from Netflix, Uber, Airbnb. Most problems you'll face have been solved before.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Learning</span>
+                        <span class="tag beginner">Research</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Great Resources:</strong> Martin Fowler's blog, High Scalability blog, company engineering blogs</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">🛤️ Learning Path</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Level 1: Foundation (0-6 months)</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Master the basics: client-server model, HTTP/REST APIs, databases (SQL basics), basic web architecture (frontend + backend + database), MVC pattern.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Beginner</span>
+                        <span class="tag beginner">Fundamentals</span>
+                    </div>
+                    <div class="learning-path"><strong>📖 Projects:</strong> Build a blog, todo app, simple e-commerce site with CRUD operations</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Level 2: Intermediate (6-12 months)</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Learn caching strategies, authentication/authorization, API design best practices, basic scaling (load balancers), intro to microservices, message queues, asynchronous processing.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Intermediate</span>
+                        <span class="tag">Distributed</span>
+                    </div>
+                    <div class="learning-path"><strong>📖 Projects:</strong> Real-time chat app, social media feed, booking system with notifications</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Level 3: Advanced (12+ months)</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Dive into microservices architecture, event-driven systems, CQRS, distributed systems challenges (CAP theorem), containers & orchestration, observability, advanced patterns from other tabs in this guide.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Advanced</span>
+                        <span class="tag">Enterprise</span>
+                    </div>
+                    <div class="learning-path"><strong>📖 Projects:</strong> Distributed marketplace, streaming platform, multi-tenant SaaS application</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Common Beginner Mistakes</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc"><strong>Over-engineering:</strong> Using microservices for a small app. <strong>Ignoring non-functionals:</strong> Forgetting security, monitoring. <strong>No testing strategy:</strong> Building without automated tests. <strong>Coupling:</strong> Making everything depend on everything.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Pitfalls</span>
+                        <span class="tag beginner">Avoid</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Pro Tip:</strong> The best architecture is the simplest one that solves your current problems.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">🎓 Next Steps</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Ready to Level Up?</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Once you're comfortable with these basics, explore the other tabs: <strong>Software</strong> for design patterns, <strong>Cloud</strong> for modern infrastructure, <strong>Data</strong> for handling information at scale, <strong>Security</strong> for protecting your systems.</p>
+                    <div class="pattern-tags">
+                        <span class="tag beginner">Progress</span>
+                        <span class="tag beginner">Growth</span>
+                    </div>
+                    <div class="tip-box"><strong>💡 Remember:</strong> Architecture is learned through practice. Build projects, make mistakes, iterate, and improve!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="software" class="content">
+        <div class="category">
+            <div class="category-title">⚡ System Design</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Microservices Architecture</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Decompose applications into small, independent services that communicate via APIs. Each service owns its data and can be deployed independently.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Scalability</span>
+                        <span class="tag">Independence</span>
+                        <span class="tag">Polyglot</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Large-scale applications, multiple teams, different tech stacks per service</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Event-Driven Architecture</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Services communicate through events rather than direct calls. Producers emit events, consumers react asynchronously, enabling loose coupling.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Async</span>
+                        <span class="tag">Decoupled</span>
+                        <span class="tag">Real-time</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> IoT systems, real-time analytics, notification systems, workflow orchestration</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">CQRS Pattern</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Command Query Responsibility Segregation separates read and write operations into different models, optimizing each for its specific use case.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Performance</span>
+                        <span class="tag">Scalability</span>
+                        <span class="tag">Optimization</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> High-read/write ratio systems, complex domains, event sourcing implementations</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">🔄 Integration Patterns</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">API Gateway</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Single entry point for all client requests, handling routing, composition, protocol translation, authentication, and rate limiting.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Centralized</span>
+                        <span class="tag">Security</span>
+                        <span class="tag">Routing</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Microservices, mobile backends, third-party API management</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Backend for Frontend (BFF)</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Create separate backend services tailored to specific frontend needs (web, mobile, IoT), each optimized for its client type.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Tailored</span>
+                        <span class="tag">Optimized</span>
+                        <span class="tag">Client-specific</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Multi-platform apps with different UX requirements and data needs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="cloud" class="content">
+        <div class="category">
+            <div class="category-title">☁️ Cloud Native</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Serverless Architecture</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Build applications using managed services and functions-as-a-service, eliminating server management and paying only for actual usage.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Auto-scale</span>
+                        <span class="tag">Pay-per-use</span>
+                        <span class="tag">No-ops</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Variable workloads, event processing, rapid prototyping, cost optimization</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Multi-Cloud Strategy</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Distribute workloads across multiple cloud providers to avoid vendor lock-in, improve resilience, and leverage best-of-breed services.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Resilience</span>
+                        <span class="tag">Flexibility</span>
+                        <span class="tag">Best-of-breed</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Enterprise apps, regulatory requirements, disaster recovery, cost optimization</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Container Orchestration</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Use Kubernetes or similar platforms to automate deployment, scaling, and management of containerized applications across clusters.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Portability</span>
+                        <span class="tag">Automation</span>
+                        <span class="tag">Scale</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Cloud-native apps, CI/CD pipelines, hybrid cloud, microservices deployment</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">🔧 Resilience Patterns</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Circuit Breaker</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Prevent cascading failures by detecting service issues and temporarily blocking requests to failing services, allowing them to recover.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Fault-tolerance</span>
+                        <span class="tag">Resilience</span>
+                        <span class="tag">Recovery</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Distributed systems, external API calls, microservices communication</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Bulkhead Pattern</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Isolate resources (threads, connections, memory) into separate pools so failure in one area doesn't exhaust resources for others.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Isolation</span>
+                        <span class="tag">Resource-mgmt</span>
+                        <span class="tag">Stability</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Multi-tenant systems, protecting critical paths, resource-intensive operations</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="data" class="content">
+        <div class="category">
+            <div class="category-title">💾 Data Architecture</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Data Mesh</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Decentralized data ownership where domain teams own their data as products, with federated governance and self-serve infrastructure.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Domain-driven</span>
+                        <span class="tag">Decentralized</span>
+                        <span class="tag">Product-thinking</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Large organizations, multiple data domains, scaling data teams independently</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Lambda Architecture</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Combine batch and stream processing layers: batch for accurate historical data, speed layer for real-time approximations, serving layer for queries.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Batch+Stream</span>
+                        <span class="tag">Real-time</span>
+                        <span class="tag">Fault-tolerant</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Big data analytics, real-time dashboards, IoT data processing</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Polyglot Persistence</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Use different database technologies for different data storage needs: relational, document, graph, time-series, key-value stores.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Right-tool</span>
+                        <span class="tag">Optimized</span>
+                        <span class="tag">Flexible</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Complex apps with diverse data types, microservices, performance optimization</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">📊 Data Processing</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Event Sourcing</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Store all state changes as a sequence of events rather than current state. Rebuild state by replaying events, enabling time-travel and audit trails.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Audit</span>
+                        <span class="tag">Temporal</span>
+                        <span class="tag">Immutable</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Financial systems, compliance-heavy domains, debugging complex state changes</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Change Data Capture (CDC)</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Track and capture database changes in real-time, propagating them to downstream systems for sync, analytics, or event streaming.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Real-time-sync</span>
+                        <span class="tag">Event-stream</span>
+                        <span class="tag">Integration</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Data replication, cache invalidation, search index updates, microservices data sync</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="security" class="content">
+        <div class="category">
+            <div class="category-title">🔒 Security Architecture</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Zero Trust Architecture</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Never trust, always verify. Authenticate and authorize every access request regardless of location, using micro-segmentation and least privilege.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Verify-always</span>
+                        <span class="tag">Least-privilege</span>
+                        <span class="tag">Micro-segmentation</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Cloud environments, remote workforce, protecting critical assets, compliance</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Defense in Depth</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Multiple layers of security controls throughout IT systems, so if one fails, others continue protecting: network, application, data, physical.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Layered</span>
+                        <span class="tag">Redundant</span>
+                        <span class="tag">Comprehensive</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Enterprise security, protecting sensitive data, regulatory compliance, critical infrastructure</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Secrets Management</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Centralized storage, rotation, and access control for sensitive credentials using vault systems. Never hardcode secrets in code or configs.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Encryption</span>
+                        <span class="tag">Rotation</span>
+                        <span class="tag">Access-control</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> API keys, database passwords, certificates, service-to-service authentication</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">🛡️ Identity & Access</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">OAuth 2.0 / OIDC</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Industry standard for authorization (OAuth) and authentication (OpenID Connect), enabling secure delegated access via tokens.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Token-based</span>
+                        <span class="tag">Delegated</span>
+                        <span class="tag">Standard</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> API security, SSO, third-party integrations, mobile apps, microservices auth</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Role-Based Access Control (RBAC)</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Assign permissions to roles rather than individuals. Users get roles based on responsibilities, simplifying access management at scale.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Scalable</span>
+                        <span class="tag">Manageable</span>
+                        <span class="tag">Compliance</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Enterprise apps, multi-tenant systems, complex permission structures</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="iot" class="content">
+        <div class="category">
+            <div class="category-title">📡 IoT Architecture Patterns</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Hub-and-Spoke Architecture</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Central hub (gateway or cloud) manages all device communication. Devices connect to the hub, which routes messages, aggregates data, and manages device state. Simple topology with centralized control.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Centralized</span>
+                        <span class="tag">Gateway</span>
+                        <span class="tag">Management</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Smart homes, building automation, small-scale IoT deployments, managed device fleets</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Mesh Network Architecture</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Devices communicate directly with nearby devices, forming a self-healing network. Each device acts as a relay, extending range and improving resilience. No single point of failure.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Distributed</span>
+                        <span class="tag">Self-healing</span>
+                        <span class="tag">Resilient</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Industrial sensors, smart city infrastructure, large-area monitoring, environments without reliable connectivity</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Device Layer Architecture</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">The physical layer where sensors, actuators, and smart devices collect data and execute commands. Includes constrained devices (sensors) and edge gateways with more compute power.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Hardware</span>
+                        <span class="tag">Sensors</span>
+                        <span class="tag">Edge-devices</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Foundation of all IoT systems - temperature sensors, cameras, smart meters, industrial equipment</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">🔌 Communication Protocols</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">MQTT (Message Queue Telemetry Transport)</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Lightweight pub/sub messaging protocol designed for constrained devices and low-bandwidth networks. Devices publish to topics, subscribers receive updates. Ideal for IoT telemetry.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Pub/Sub</span>
+                        <span class="tag">Lightweight</span>
+                        <span class="tag">Low-bandwidth</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Real-time telemetry, remote monitoring, mobile apps, satellite connections, battery-powered devices</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">CoAP (Constrained Application Protocol)</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">RESTful protocol optimized for constrained devices, similar to HTTP but much lighter. Uses UDP instead of TCP, supports resource discovery and observation (subscribe to changes).</p>
+                    <div class="pattern-tags">
+                        <span class="tag">RESTful</span>
+                        <span class="tag">UDP</span>
+                        <span class="tag">Constrained</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Low-power sensors, mesh networks, M2M communication, resource-constrained environments</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">HTTP/REST for IoT</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Standard HTTP REST APIs for device communication. Simple, widely supported, but higher overhead. Good for devices with sufficient power and bandwidth, easier integration with web services.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Standard</span>
+                        <span class="tag">Simple</span>
+                        <span class="tag">Request/Response</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Smart appliances, connected vehicles, devices with WiFi, cloud-connected apps, RESTful integrations</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">WebSockets for Real-time</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Full-duplex communication over a single TCP connection. Server can push updates to clients instantly. Perfect for real-time dashboards and bidirectional device control.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Bidirectional</span>
+                        <span class="tag">Real-time</span>
+                        <span class="tag">Push</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Live dashboards, remote device control, monitoring systems, chat-like device interactions</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">⚡ Edge vs Cloud Processing</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Edge Computing</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Process data locally on edge devices or gateways near the data source. Reduces latency, bandwidth usage, and cloud costs. Enables offline operation and real-time decisions.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Low-latency</span>
+                        <span class="tag">Offline-capable</span>
+                        <span class="tag">Bandwidth-efficient</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Autonomous vehicles, industrial automation, video analytics, medical devices requiring instant response</div>
+                    <div class="tip-box"><strong>💡 When to use Edge:</strong> Real-time requirements (<100ms), limited connectivity, privacy concerns, high data volumes</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Cloud Processing</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Send raw or pre-processed data to cloud for centralized processing, storage, and analysis. Unlimited compute and storage, advanced ML capabilities, easier management and updates.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Scalable</span>
+                        <span class="tag">Centralized</span>
+                        <span class="tag">ML-capable</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Historical analytics, machine learning training, cross-device insights, long-term storage, complex processing</div>
+                    <div class="tip-box"><strong>💡 When to use Cloud:</strong> Complex analytics, ML training, historical data, device coordination, unlimited scale</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Hybrid Edge-Cloud Architecture</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Combine edge and cloud processing. Edge handles real-time decisions and filtering. Cloud handles aggregation, long-term storage, ML training, and cross-device intelligence. Best of both worlds.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Optimized</span>
+                        <span class="tag">Balanced</span>
+                        <span class="tag">Flexible</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Smart cities, retail analytics, predictive maintenance, most production IoT systems</div>
+                    <div class="tip-box"><strong>💡 Best Practice:</strong> Process at the edge for immediate needs, send summaries to cloud for intelligence</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">🔄 Backend Processing</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Stream Processing Pipeline</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Continuous processing of incoming device data streams. Ingest → Filter → Transform → Enrich → Aggregate → Output. Use tools like Kafka, Kinesis, or Azure Stream Analytics.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Real-time</span>
+                        <span class="tag">Continuous</span>
+                        <span class="tag">Pipeline</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Telemetry processing, anomaly detection, real-time alerts, live dashboards, event correlation</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Device Twin Pattern</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Cloud-based digital representation of physical devices storing state, metadata, and configuration. Enables querying device state without direct connection and offline device management.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">State-sync</span>
+                        <span class="tag">Digital-twin</span>
+                        <span class="tag">Metadata</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Device management, state synchronization, configuration deployment, monitoring disconnected devices</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Command and Control</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Backend sends commands to devices for remote control and configuration. Handles command queuing for offline devices, retry logic, and acknowledgment tracking.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Remote-control</span>
+                        <span class="tag">Bidirectional</span>
+                        <span class="tag">Queuing</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Remote device updates, configuration changes, actuator control, emergency shutdowns</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">💾 Data Storage</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Time-Series Databases</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Optimized for storing and querying timestamped data from sensors. Efficient compression, fast aggregations, automatic data retention policies. Examples: InfluxDB, TimescaleDB, TimeStream.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Optimized</span>
+                        <span class="tag">Compression</span>
+                        <span class="tag">Aggregation</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Sensor telemetry, metrics, monitoring data, industrial time-series, weather data</div>
+                    <div class="tip-box"><strong>💡 InfluxDB Pattern:</strong> Line protocol for fast writes, flux/InfluxQL for queries, retention policies for auto-deletion. Great for metrics and monitoring.</div>
+                    <div class="tip-box"><strong>💡 TimescaleDB Pattern:</strong> PostgreSQL extension with automatic partitioning (hypertables), continuous aggregates for pre-computed rollups, SQL compatibility for complex queries.</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Hot-Warm-Cold Storage Tiers</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Optimize costs by moving data through storage tiers based on access patterns. Hot: recent data, fast access. Warm: older data, medium speed. Cold: archived data, slow but cheap.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Cost-optimized</span>
+                        <span class="tag">Tiered</span>
+                        <span class="tag">Lifecycle</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Large-scale IoT with massive data volumes, regulatory compliance, historical analysis</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">📊 UI Representation</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Real-time Dashboards</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Live visualization of device data using WebSockets or Server-Sent Events. Shows current device status, telemetry streams, alerts, and trends. Updates automatically without page refresh.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Live</span>
+                        <span class="tag">Visualization</span>
+                        <span class="tag">Monitoring</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Operations centers, facility monitoring, fleet management, industrial control rooms</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Historical Data Visualization</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Time-series charts, heatmaps, and trend analysis of historical device data. Enables pattern recognition, anomaly detection, and comparative analysis across time periods and devices.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Analytics</span>
+                        <span class="tag">Trends</span>
+                        <span class="tag">Historical</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Performance analysis, capacity planning, troubleshooting, compliance reporting</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Device Management UI</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Interface for provisioning, configuring, and managing IoT devices at scale. Shows device inventory, health status, firmware versions, and enables bulk operations.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Management</span>
+                        <span class="tag">Configuration</span>
+                        <span class="tag">Operations</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Device fleet management, remote configuration, firmware updates, diagnostics</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Alerts and Notifications</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Rule-based alerting system that notifies users of anomalies, thresholds, or events. Multi-channel notifications (email, SMS, push, in-app). Configurable alert severity and routing.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Proactive</span>
+                        <span class="tag">Multi-channel</span>
+                        <span class="tag">Rules-based</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> System health monitoring, predictive maintenance, security incidents, threshold violations</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category">
+            <div class="category-title">🔐 IoT Security</div>
+            
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Device Authentication</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Secure device identity using certificates, hardware security modules (HSM), or device keys. Each device has unique credentials. Prevents unauthorized devices from connecting.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">Identity</span>
+                        <span class="tag">Certificates</span>
+                        <span class="tag">HSM</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> All production IoT deployments - prevent rogue devices, secure manufacturing, device provisioning</div>
+                </div>
+            </div>
+
+            <div class="pattern-card">
+                <div class="pattern-header">
+                    <span class="pattern-title">Encrypted Communication</span>
+                    <span class="pattern-icon">▼</span>
+                </div>
+                <div class="pattern-content">
+                    <p class="pattern-desc">Use TLS/SSL for all device-to-cloud communication. Encrypt data at rest and in transit. Prevents eavesdropping and man-in-the-middle attacks on IoT networks.</p>
+                    <div class="pattern-tags">
+                        <span class="tag">TLS/SSL</span>
+                        <span class="tag">Encryption</span>
+                        <span class="tag">Protection</span>
+                    </div>
+                    <div class="use-case"><strong>Use:</strong> Sensitive data transmission, healthcare devices, financial IoT, any internet-connected device</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Pattern card expansion
+        const patternCards = document.querySelectorAll('.pattern-card');
+
+        patternCards.forEach(card => {
+            const header = card.querySelector('.pattern-header');
+            header.addEventListener('click', () => {
+                card.classList.toggle('expanded');
+            });
+        });
+
+        // Prevent default touch behavior for better mobile experience
+        document.addEventListener('touchmove', (e) => {
+            if (e.target.closest('.tabs')) {
+                // Allow horizontal scrolling for tabs
+                return;
+            }
+        }, { passive: true });
+    </script>
+</body>
+</html>
